@@ -34,12 +34,14 @@ class MyAccountManager(BaseUserManager):
         return user
 
 
-class ClientUser(AbstractBaseUser):
+class User(AbstractBaseUser):
     full_name = models.CharField(max_length=255)
     username = models.CharField(max_length=255, unique=True)
     email = models.EmailField(verbose_name="email", max_length=60, unique=True)
     password = models.CharField(max_length=255)
-    user_type = models.CharField(max_length=255, default="client")
+    user_type = models.CharField(max_length=255)
+    # establishment = models.CharField(max_length=255)
+
 
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -52,17 +54,13 @@ class ClientUser(AbstractBaseUser):
     objects = MyAccountManager()
 
     def __str__(self):
-        return self.full_name
-    
-    def __str__(self):
-        return self.full_name
+        return self.username + ", " + self.full_name 
 
     def has_perm(self, perm, obj=None):
         return self.is_admin
 
     def has_module_perms(self, app_label):
         return True
-
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

@@ -82,7 +82,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'cafeistic.wsgi.application'
-AUTH_USER_MODEL = 'account.ClientUser'
+AUTH_USER_MODEL = 'account.User'
 
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
