@@ -13,7 +13,6 @@ class MyAccountManager(BaseUserManager):
             raise ValueError("User must have username")
 
         user = self.model(
-            # email=self.normalize_email(email),
             username=username,
         )
 
@@ -23,7 +22,6 @@ class MyAccountManager(BaseUserManager):
 
     def create_superuser(self, username, password):
         user = self.create_user(
-            # email=self.normalize_email(email),
             password=password,
             username=username,
         )
@@ -34,12 +32,11 @@ class MyAccountManager(BaseUserManager):
         return user
 
 
-class User(AbstractBaseUser):
-    full_name = models.CharField(max_length=255)
+class Account(AbstractBaseUser):
     username = models.CharField(max_length=255, unique=True)
-    email = models.EmailField(verbose_name="email", max_length=60, unique=True)
-    password = models.CharField(max_length=255)
-    user_type = models.CharField(max_length=255)
+    full_name = models.CharField(max_length=255)
+    # email = models.EmailField(verbose_name="email", max_length=60, unique=True)
+    # user_type = models.CharField(max_length=255)
     # establishment = models.CharField(max_length=255)
 
 
