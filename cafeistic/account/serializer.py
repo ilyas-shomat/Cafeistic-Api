@@ -2,7 +2,7 @@ from rest_framework import serializers
 from . import models
 
 
-# --------------- AUTH -------------------------------------------------------------
+# --------------- USER -------------------------------------------------------------
 
 class AccountSerializer(serializers.ModelSerializer):
     class Meta:
@@ -22,7 +22,17 @@ class AccountSerializer(serializers.ModelSerializer):
                                  email=self.validated_data["email"],
                                  user_type=self.validated_data["user_type"],
                                 )
+        if "establishment" in self.validated_data:
+            account.establishment = self.validated_data["establishment"]
         password = self.validated_data['password']
         account.set_password(password)
         account.save()
         return account
+
+
+# --------------- ESTABLISHMENT -------------------------------------------------------------
+
+class EstablishmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Establishment
+        fields = "__all__"

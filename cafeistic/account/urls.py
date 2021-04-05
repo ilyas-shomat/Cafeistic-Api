@@ -7,7 +7,7 @@ urlpatterns = [
     ############ COMMON #############
     # path('login/', views.login, name="login_user"),
     path('login', obtain_auth_token, name="login"),
-    path('create', views.create_new_user, name="create_new_user"),
-
+    path('create_user', views.create_new_user, name="create_new_user"),
+    path('create_establisment', views.create_new_establishment, name="create_new_establishment"),
 
 ]
