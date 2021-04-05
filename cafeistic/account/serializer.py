@@ -19,6 +19,8 @@ class AccountSerializer(serializers.ModelSerializer):
     def save(self):
         account = models.Account(full_name=self.validated_data['full_name'],
                                  username=self.validated_data["username"],
+                                 email=self.validated_data["email"],
+                                 user_type=self.validated_data["user_type"],
                                 )
         password = self.validated_data['password']
         account.set_password(password)

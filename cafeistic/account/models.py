@@ -7,6 +7,15 @@ from rest_framework.authtoken.models import Token
 
 # Create your models here.
 
+class Establishment(models.Model):
+    name = models.CharField(max_length=255)
+    city = models.CharField(max_length=255)
+    number = models.CharField(max_length=255)
+    email = email = models.EmailField(verbose_name="email", max_length=60)
+
+    def __str__(self):
+        return self.name
+
 class MyAccountManager(BaseUserManager):
     def create_user(self, username, password=None):
         if not username:
@@ -35,10 +44,9 @@ class MyAccountManager(BaseUserManager):
 class Account(AbstractBaseUser):
     username = models.CharField(max_length=255, unique=True)
     full_name = models.CharField(max_length=255)
-    # email = models.EmailField(verbose_name="email", max_length=60, unique=True)
-    # user_type = models.CharField(max_length=255)
-    # establishment = models.CharField(max_length=255)
-
+    email = models.EmailField(verbose_name="email", max_length=60)
+    user_type = models.CharField(max_length=255)
+    establishment = models.ForeignKey(Establishment, on_delete=models.CASCADE, related_name='user_establishment', null=True)
 
     is_admin = models.BooleanField(default=False)
     is_active = models.BooleanField(default=True)
@@ -58,6 +66,9 @@ class Account(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+
+
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):
