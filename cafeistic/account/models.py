@@ -12,6 +12,7 @@ class Establishment(models.Model):
     city = models.CharField(max_length=255)
     number = models.CharField(max_length=255)
     email = email = models.EmailField(verbose_name="email", max_length=60)
+    qr_code = models.CharField(max_length=255, null=True)
 
     def __str__(self):
         return self.name
