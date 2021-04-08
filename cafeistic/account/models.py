@@ -15,7 +15,7 @@ class Establishment(models.Model):
     qr_code = models.CharField(max_length=255, null=True)
 
     def __str__(self):
-        return self.name
+        return self.name + " id: " + str(self.id)
 
 class MyAccountManager(BaseUserManager):
     def create_user(self, username, password=None):
@@ -60,7 +60,7 @@ class Account(AbstractBaseUser):
     objects = MyAccountManager()
 
     def __str__(self):
-        return self.username + ", " + self.full_name 
+        return self.username + ", " + self.full_name + " id: " + str(self.id)
 
     def has_perm(self, perm, obj=None):
         return self.is_admin

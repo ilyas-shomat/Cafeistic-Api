@@ -5,9 +5,20 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import UpdateAPIView
+from django.core.exceptions import ObjectDoesNotExist
 
 from account.models import (
     Establishment
+)
+
+from .models import (
+    Category,
+    Meal
+)
+
+from .serializer import (
+    CategorySerializer,
+    MealSerializer
 )
 
 # --------------- MENU -------------------------------------------------------------
@@ -26,8 +37,10 @@ def send_qr_code(request):
             try:
                 establishment = Establishment.objects.get(qr_code=qr_code)
 
-            except Establishment.DoesNotExixt:
-                return Response(status=status.HTTP_404_NOT_FOUND)
+            except ObjectDoesNotExist:
+                data['status'] = 'failed'
+                data['desc'] = 'current menu not found'
+                return Response(data=data, status=status.HTTP_404_NOT_FOUND)
 
             data['status'] = 'success'
             data['desc'] = 'current menu found'
@@ -35,5 +48,69 @@ def send_qr_code(request):
                 "establisment_id": establishment.id
             }
 
-        return Response(data=data)
+        return Response(data=data, status=status.HTTP_200_OK)
 
+
+# --------------- Get Establishment Categories ---------------
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def get_categories(request):
+    if request.method == 'POST':
+        data = {}
+        request_data = request.data
+
+        if request_data["establisment_id"] is not None:
+            establisment_id = request_data["establisment_id"]
+
+            try:
+                establishment = Establishment.objects.get(id=establisment_id)
+                categoryies = Category.objects.filter(establishment=establishment)
+                ser = CategorySerializer(categoryies, many=True)
+
+            except ObjectDoesNotExist:
+                data['status'] = 'failed'
+                data['desc'] = 'categories not found'
+                return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+            data['status'] = 'success'
+            data['desc'] = 'current categories found'
+            data["data"] = {
+                "categories": ser.data
+            }
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Get Establishment Meals ---------------
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def get_meals(request):
+    if request.method == "POST":
+        data = {}
+        request_data = request.data
+
+        if request_data["category_id"] is not None:
+            category_id = request_data["category_id"]
+
+            try:
+                category = Category.objects.get(id=category_id)
+                meals = Meal.objects.filter(category=category)
+                ser = MealSerializer(meals, many=True)
+
+                if len(meals) == 0:
+                    data['status'] = 'failed'
+                    data['desc'] = 'meals not found'
+                    return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+            except ObjectDoesNotExist:
+                data['status'] = 'failed'
+                data['desc'] = 'meals not found'
+                return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+            data['status'] = 'success'
+            data['desc'] = 'current meals found'
+            data["data"] = {
+                "categories": ser.data
+            }
+
+        return Response(data=data, status=status.HTTP_200_OK)
