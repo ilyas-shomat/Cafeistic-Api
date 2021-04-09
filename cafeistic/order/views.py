@@ -11,6 +11,7 @@ from .models import OrderObject, OrderMeal
 from .serializer import OrderSerializer, OrderMealSerializer
 
 from menu.models import Meal
+from account.models import Establishment
 
 # --------------- Order -------------------------------------------------------------
 
@@ -171,7 +172,7 @@ def rempove_cart_meal(request):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-# --------------- Remove Cart Meal ---------------
+# --------------- Edit Cart Meal Count ---------------
 @api_view(["PUT"])
 @permission_classes((IsAuthenticated,))
 def edit_cart_meal_count(request):
@@ -193,5 +194,33 @@ def edit_cart_meal_count(request):
 
         data['status'] = 'success'
         data['desc'] = 'current meal count edited'
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Make Order ---------------
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def make_order(request):
+    if request.method == 'POST':
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            order_object = OrderObject.objects.get(client_user=account, status="in_cart")
+            establishment = Establishment.objects.get(id=request_data["establishment_id"])
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'current cart object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+        order_object.status = "ordered"
+        order_object.establishment = establishment
+        order_object.save()
+
+        data['status'] = 'success'
+        data['desc'] = 'order made'
 
         return Response(data=data, status=status.HTTP_200_OK)
