@@ -103,9 +103,39 @@ def add_meal_to_cart(request):
         except ObjectDoesNotExist:
             data['status'] = 'failed'
             data['desc'] = ''
-            return Response(data=data, status=status.HTTP_201_CREATED)
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
 
         data['status'] = 'success'
         data['desc'] = 'current meal added to Cart'
 
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+
+# --------------- Clear Cart ---------------
+@api_view(["DELETE"])
+@permission_classes((IsAuthenticated,))
+def clear_cart(request):
+    if request.method == 'DELETE':
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            order_object = OrderObject.objects.get(client_user=account, status="in_cart")
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+        
+        operation = order_object.delete()
+
+        if operation:
+            data['status'] = 'success'
+            data['desc'] = 'object deleleted'
+        else:
+            data['status'] = 'failed'
+            data['desc'] = 'object not deleleted'
+    
         return Response(data=data, status=status.HTTP_200_OK)
