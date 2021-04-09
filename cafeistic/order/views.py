@@ -10,6 +10,8 @@ from django.core.exceptions import ObjectDoesNotExist
 from .models import OrderObject, OrderMeal
 from .serializer import OrderSerializer, OrderMealSerializer
 
+from menu.models import Meal
+
 # --------------- Order -------------------------------------------------------------
 
 # --------------- Get Cart ---------------
@@ -71,5 +73,39 @@ def create_cart(request):
 
         data['status'] = 'failed'
         data['desc'] = 'current cart is not empty'
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Add Meal To Cart ---------------
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def add_meal_to_cart(request):
+    if request.method == 'POST':
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            meal_id = request.data["meal_id"]
+            meal_count = request.data["meal_count"]
+
+            meal = Meal.objects.get(id=meal_id)
+            order_object = OrderObject.objects.get(client_user=account, status="in_cart")
+            
+            new_order_meal = OrderMeal()
+            new_order_meal.meal = meal
+            new_order_meal.count = meal_count
+            new_order_meal.order_object = order_object
+
+            new_order_meal.save()
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = ''
+            return Response(data=data, status=status.HTTP_201_CREATED)
+
+        data['status'] = 'success'
+        data['desc'] = 'current meal added to Cart'
 
         return Response(data=data, status=status.HTTP_200_OK)
