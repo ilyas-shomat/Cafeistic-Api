@@ -218,9 +218,42 @@ def make_order(request):
 
         order_object.status = "ordered"
         order_object.establishment = establishment
+        order_object.total_price = request_data["total_price"]
         order_object.save()
 
         data['status'] = 'success'
         data['desc'] = 'order made'
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Make Order ---------------
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_accepted_order(request):
+    if request.method == 'GET':
+        data = {}
+        account = request.user
+
+        try:
+            order_object = OrderObject.objects.get(client_user=account, status="accepted")
+            order_ser = OrderSerializer(order_object)
+            
+            order_meals = OrderMeal.objects.filter(order_object=order_object)
+            meal_ser = OrderMealSerializer(order_meals, many=True)
+
+        
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'current cart object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+        
+
+        data['status'] = 'success'
+        data['desc'] = 'current accepted order object found'
+        data["data"] = {
+            "order_object": order_ser.data,
+            "order_meals": meal_ser.data
+        }
 
         return Response(data=data, status=status.HTTP_200_OK)
