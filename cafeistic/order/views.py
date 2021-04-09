@@ -169,3 +169,29 @@ def rempove_cart_meal(request):
             data['desc'] = 'object not deleleted'
     
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Remove Cart Meal ---------------
+@api_view(["PUT"])
+@permission_classes((IsAuthenticated,))
+def edit_cart_meal_count(request):
+    if request.method == 'PUT':
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try: 
+            cart_meal = OrderMeal.objects.get(id=request_data["cart_meal_id"])
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+        cart_meal.count = request_data["count"]
+        cart_meal.save()
+
+        data['status'] = 'success'
+        data['desc'] = 'current meal count edited'
+
+        return Response(data=data, status=status.HTTP_200_OK)
