@@ -139,3 +139,33 @@ def clear_cart(request):
             data['desc'] = 'object not deleleted'
     
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Remove Cart Meal ---------------
+@api_view(["DELETE"])
+@permission_classes((IsAuthenticated,))
+def rempove_cart_meal(request):
+    if request.method == 'DELETE':
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            cart_meal = OrderMeal.objects.get(id=request_data["cart_meal_id"])
+        
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+        
+        operation = cart_meal.delete()
+
+        if operation:
+            data['status'] = 'success'
+            data['desc'] = 'object deleleted'
+        else:
+            data['status'] = 'failed'
+            data['desc'] = 'object not deleleted'
+    
+        return Response(data=data, status=status.HTTP_200_OK)
