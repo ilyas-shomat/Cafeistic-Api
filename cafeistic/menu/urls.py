@@ -5,7 +5,9 @@ from . import views
 
 urlpatterns = [
 
-    ############ Categories #############
-    path('send_qr', views.send_qr_code, name="login"),
+    path('send_qr', views.send_qr_code, name="send_qr_code"),
+    path('get_categories', views.get_categories, name="get_categories"),
+    path('get_meals', views.get_meals, name="get_meals"),
+
 
 ]
