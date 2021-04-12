@@ -13,7 +13,7 @@ from .serializer import OrderSerializer, OrderMealSerializer
 from menu.models import Meal
 from account.models import Establishment
 
-# --------------- Order -------------------------------------------------------------
+# --------------- CLIENT -------------------------------------------------------------
 
 # --------------- Get Cart ---------------
 @api_view(["GET"])
@@ -259,6 +259,9 @@ def get_accepted_order(request):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
+
+# --------------- ESTABLISHMENT -------------------------------------------------------------
+
 # --------------- Get All Establishment Orders ---------------
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
@@ -294,3 +297,36 @@ def get_all_orders(request):
             
         return Response(data=data, status=status.HTTP_200_OK)
 
+
+
+# --------------- Get Exact Order ---------------
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_exact_order(request):
+    if request.method == 'GET':
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            order_object = OrderObject.objects.get(id=request_data["order_id"])
+            order_ser = OrderSerializer(order_object)
+            
+            order_meals = OrderMeal.objects.filter(order_object=order_object)
+            meal_ser = OrderMealSerializer(order_meals, many=True)
+
+        
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'current cart object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+        
+
+        data['status'] = 'success'
+        data['desc'] = 'current accepted order object found'
+        data["data"] = {
+            "order_object": order_ser.data,
+            "order_meals": meal_ser.data
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
