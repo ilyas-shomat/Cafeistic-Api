@@ -227,7 +227,7 @@ def make_order(request):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-# --------------- Make Order ---------------
+# --------------- Get Accepted Order ---------------
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def get_accepted_order(request):
@@ -257,3 +257,40 @@ def get_accepted_order(request):
         }
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Get All Establishment Orders ---------------
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_all_orders(request):
+    if request.method == 'GET':
+        data = {}
+        account = request.user
+
+        try: 
+            establishment = account.establishment
+            ordered_objects = OrderObject.objects.filter(establishment=establishment, status="ordered")
+            ordered_ser = OrderSerializer(ordered_objects, many=True)
+
+            accepted_objects = OrderObject.objects.filter(establishment=establishment, status="accepted")
+            accepted_ser = OrderSerializer(accepted_objects, many=True)
+
+            if not ordered_objects and not accepted_objects:
+                data['status'] = 'failed'
+                data['desc'] = 'not orders exist'
+                return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+            data['status'] = 'success'
+            data['desc'] = 'current orders found'
+            data["data"] = {
+                "ordered": ordered_ser.data,
+                "accepted": accepted_ser.data
+            }
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'current cart object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+            
+        return Response(data=data, status=status.HTTP_200_OK)
+

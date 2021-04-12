@@ -12,4 +12,6 @@ urlpatterns = [
     path('edit_cart_meal_count', views.edit_cart_meal_count, name="edit_cart_meal_count"),
     path('make_order', views.make_order, name="make_order"),
     path('get_accepted_order', views.get_accepted_order, name="get_accepted_order"),
+    path('get_all_orders', views.get_all_orders, name="get_all_orders"),
+
 ]
