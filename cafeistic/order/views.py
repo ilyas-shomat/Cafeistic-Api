@@ -330,3 +330,33 @@ def get_exact_order(request):
         }
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Accept/Decline Order ---------------
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def accept_decline_order(request):
+    if request.method == 'POST':
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            order_object = OrderObject.objects.get(id=request_data["order_id"])
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'current order object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+        order_object.status = request_data["order_status"]
+        order_object.save()
+
+        data['status'] = 'success'
+        if request_data["order_status"] == "accepted":
+            data['desc'] = 'order accepted'
+        if request_data["order_status"] == "closed":
+            data['desc'] = 'order closed'
+
+
+        return Response(data=data, status=status.HTTP_200_OK)

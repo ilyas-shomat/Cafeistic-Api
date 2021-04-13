@@ -17,6 +17,7 @@ urlpatterns = [
     # --------------- ESTABLISHMENT -------------------------------------------------------------
     path('get_all_orders', views.get_all_orders, name="get_all_orders"),
     path('get_exact_order', views.get_exact_order, name="get_exact_order"),
+    path('accept_decline_order', views.accept_decline_order, name="accept_decline_order"),
 
 
 ]
