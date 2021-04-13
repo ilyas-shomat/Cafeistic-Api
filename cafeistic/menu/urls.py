@@ -12,5 +12,6 @@ urlpatterns = [
 
     # --------------- ESTABLISHMENT -------------------------------------------------------------
     path('add_category', views.add_category, name="add_category"),
+    path('add_new_meal', views.add_new_meal, name="add_new_meal"),
 
 ]

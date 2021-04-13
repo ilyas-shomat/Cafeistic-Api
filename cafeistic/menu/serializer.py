@@ -22,3 +22,10 @@ class CreateCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Category
         fields = ('name',)
+
+
+class CreateMealSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Meal
+        fields = ('name', 'price', 'category')
+
