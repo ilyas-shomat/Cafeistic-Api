@@ -15,3 +15,10 @@ class MealSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Meal
         fields = ('id', 'name', 'price')
+
+
+
+class CreateCategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Category
+        fields = ('name',)
