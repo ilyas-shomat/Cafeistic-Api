@@ -43,7 +43,14 @@ class EstablishmentSerializer(serializers.ModelSerializer):
         model = models.Establishment
         fields = "__all__"
 
+
 class ScheduleSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Schedule
         fields = "__all__"
+
+
+class WriteableScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Schedule
+        fields = ('monday', 'tuesday', 'wednesday','thursday', 'friday', 'saturday', 'sunday')

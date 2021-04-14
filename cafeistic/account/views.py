@@ -12,7 +12,8 @@ from .serializer import (
     AccountSerializer,
     EstablishmentSerializer,
     ReadableAccountSerializer,
-    ScheduleSerializer
+    ScheduleSerializer,
+    WriteableScheduleSerializer
 )
 
 from .models import (
@@ -119,5 +120,33 @@ def get_staff_schedule(request):
             "staff": staff_ser.data,
             "schedule": schedule_ser.data
         }
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+
+# --------------- Edit Staff Schedule ---------------
+@api_view(["PUT"])
+@permission_classes((IsAuthenticated,))
+def edit_staff_schedule(request):
+    if request.method == "PUT":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            schedule = Schedule.objects.get(id=request_data["schedule_id"])
+            ser = WriteableScheduleSerializer(schedule, data=request_data["schedule"], partial=True)
+
+            if ser.is_valid():
+                ser.save()
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'schedule not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+        data['status'] = 'success'
+        data['desc'] = 'schedule edited'
 
         return Response(data=data, status=status.HTTP_200_OK)
