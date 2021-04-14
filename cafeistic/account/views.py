@@ -5,10 +5,17 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.authtoken.models import Token
 from rest_framework.authentication import TokenAuthentication
 from rest_framework.generics import UpdateAPIView
+from django.core.exceptions import ObjectDoesNotExist
+
 
 from .serializer import (
     AccountSerializer,
-    EstablishmentSerializer
+    EstablishmentSerializer,
+    ReadableAccountSerializer
+)
+
+from .models import (
+    Account
 )
 
 # --------------- USER -------------------------------------------------------------
@@ -51,3 +58,32 @@ def create_new_establishment(request):
         else:
             data = ser.errors
         return Response(data)
+
+# --------------- Get Staff List ---------------
+
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_staff_list(request):
+    if request.method == "GET":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            establishment = account.establishment
+            staffs = Account.objects.filter(establishment=establishment)
+            
+            ser = ReadableAccountSerializer(staffs, many=True)
+        
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'staffs not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+        
+        data['status'] = 'success'
+        data['desc'] = 'current staffs found'
+        data["data"] = {
+            "staffs": ser.data
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
