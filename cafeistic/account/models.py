@@ -70,6 +70,18 @@ class Account(AbstractBaseUser):
 
 
 
+class Schedule(models.Model):
+    monday = models.BooleanField(default=False)
+    tuesday = models.BooleanField(default=False)
+    wednesday = models.BooleanField(default=False)
+    thursday = models.BooleanField(default=False)
+    friday = models.BooleanField(default=False)
+    saturday = models.BooleanField(default=False)
+    sunday = models.BooleanField(default=False)
+    account = models.ForeignKey(Account, on_delete=models.CASCADE, related_name='account_schedule', null=True)
+
+    # def __str__(self):
+        # return self.account.name + "'s schedule"
 
 @receiver(post_save, sender=settings.AUTH_USER_MODEL)
 def create_auth_token(sender, instance=None, created=False, **kwargs):

@@ -42,3 +42,8 @@ class EstablishmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Establishment
         fields = "__all__"
+
+class ScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Schedule
+        fields = "__all__"

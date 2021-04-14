@@ -12,5 +12,7 @@ urlpatterns = [
     ############ ESTABLISHMENT #############
     path('create_establisment', views.create_new_establishment, name="create_new_establishment"),
     path('get_staff_list', views.get_staff_list, name="get_staff_list"),
+    path('get_staff_schedule', views.get_staff_schedule, name="get_staff_schedule"),
+
 
 ]

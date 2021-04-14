@@ -11,11 +11,13 @@ from django.core.exceptions import ObjectDoesNotExist
 from .serializer import (
     AccountSerializer,
     EstablishmentSerializer,
-    ReadableAccountSerializer
+    ReadableAccountSerializer,
+    ScheduleSerializer
 )
 
 from .models import (
-    Account
+    Account, 
+    Schedule
 )
 
 # --------------- USER -------------------------------------------------------------
@@ -74,7 +76,8 @@ def get_staff_list(request):
             staffs = Account.objects.filter(establishment=establishment)
             
             ser = ReadableAccountSerializer(staffs, many=True)
-        
+
+
         except ObjectDoesNotExist:
             data['status'] = 'failed'
             data['desc'] = 'staffs not found'
@@ -84,6 +87,37 @@ def get_staff_list(request):
         data['desc'] = 'current staffs found'
         data["data"] = {
             "staffs": ser.data
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Get Staff Schedule ---------------
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_staff_schedule(request):
+    if request.method == "GET":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            staff = Account.objects.get(id=request_data["account_id"])
+            schedule = Schedule.objects.get(account=staff)
+
+            staff_ser = ReadableAccountSerializer(staff)
+            schedule_ser = ScheduleSerializer(schedule)
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'staff or schedule not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+        
+        data['status'] = 'success'
+        data['desc'] = 'schedule  found'
+        data["data"] = {
+            "staff": staff_ser.data,
+            "schedule": schedule_ser.data
         }
 
         return Response(data=data, status=status.HTTP_200_OK)
