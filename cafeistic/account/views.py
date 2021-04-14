@@ -150,3 +150,43 @@ def edit_staff_schedule(request):
         data['desc'] = 'schedule edited'
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+# --------------- Create Staff Schedule ---------------
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def create_staff_schedule(request):
+    if request.method == "POST":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            check_schedule = Schedule.objects.get(account=account)
+        
+            data['status'] = 'failed'
+            data['desc'] = 'schedule for this user already exist'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+        except ObjectDoesNotExist:
+
+            schedule = Schedule()
+            schedule.account = account
+            schedule.monday = False
+            schedule.tuesday = False
+            schedule.wednesday = False
+            schedule.thursday = False
+            schedule.friday = False
+            schedule.saturday = False
+            schedule.sunday = False
+
+            is_save = schedule.save()
+
+            if is_save is False:
+                data['status'] = 'failed'
+                data['desc'] = 'schedule not created'
+                return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+            
+            data['status'] = 'success'
+            data['desc'] = 'schedule created'
+
+        return Response(data=data, status=status.HTTP_200_OK)
