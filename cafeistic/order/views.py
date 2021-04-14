@@ -13,7 +13,7 @@ from .serializer import OrderSerializer, OrderMealSerializer
 from menu.models import Meal
 from account.models import Establishment
 
-# --------------- Order -------------------------------------------------------------
+# --------------- CLIENT -------------------------------------------------------------
 
 # --------------- Get Cart ---------------
 @api_view(["GET"])
@@ -227,7 +227,7 @@ def make_order(request):
         return Response(data=data, status=status.HTTP_200_OK)
 
 
-# --------------- Make Order ---------------
+# --------------- Get Accepted Order ---------------
 @api_view(["GET"])
 @permission_classes((IsAuthenticated,))
 def get_accepted_order(request):
@@ -255,5 +255,108 @@ def get_accepted_order(request):
             "order_object": order_ser.data,
             "order_meals": meal_ser.data
         }
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+
+# --------------- ESTABLISHMENT -------------------------------------------------------------
+
+# --------------- Get All Establishment Orders ---------------
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_all_orders(request):
+    if request.method == 'GET':
+        data = {}
+        account = request.user
+
+        try: 
+            establishment = account.establishment
+            ordered_objects = OrderObject.objects.filter(establishment=establishment, status="ordered")
+            ordered_ser = OrderSerializer(ordered_objects, many=True)
+
+            accepted_objects = OrderObject.objects.filter(establishment=establishment, status="accepted")
+            accepted_ser = OrderSerializer(accepted_objects, many=True)
+
+            if not ordered_objects and not accepted_objects:
+                data['status'] = 'failed'
+                data['desc'] = 'not orders exist'
+                return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+            data['status'] = 'success'
+            data['desc'] = 'current orders found'
+            data["data"] = {
+                "ordered": ordered_ser.data,
+                "accepted": accepted_ser.data
+            }
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'current cart object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+            
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+
+# --------------- Get Exact Order ---------------
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_exact_order(request):
+    if request.method == 'GET':
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            order_object = OrderObject.objects.get(id=request_data["order_id"])
+            order_ser = OrderSerializer(order_object)
+            
+            order_meals = OrderMeal.objects.filter(order_object=order_object)
+            meal_ser = OrderMealSerializer(order_meals, many=True)
+
+        
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'current cart object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+        
+
+        data['status'] = 'success'
+        data['desc'] = 'current accepted order object found'
+        data["data"] = {
+            "order_object": order_ser.data,
+            "order_meals": meal_ser.data
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Accept/Decline Order ---------------
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def accept_decline_order(request):
+    if request.method == 'POST':
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        try:
+            order_object = OrderObject.objects.get(id=request_data["order_id"])
+
+        except ObjectDoesNotExist:
+            data['status'] = 'failed'
+            data['desc'] = 'current order object not found'
+            return Response(data=data, status=status.HTTP_404_NOT_FOUND)
+
+        order_object.status = request_data["order_status"]
+        order_object.save()
+
+        data['status'] = 'success'
+        if request_data["order_status"] == "accepted":
+            data['desc'] = 'order accepted'
+        if request_data["order_status"] == "closed":
+            data['desc'] = 'order closed'
+
 
         return Response(data=data, status=status.HTTP_200_OK)

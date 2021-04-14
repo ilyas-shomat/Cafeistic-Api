@@ -18,10 +18,12 @@ from .models import (
 
 from .serializer import (
     CategorySerializer,
-    MealSerializer
+    MealSerializer,
+    CreateCategorySerializer,
+    CreateMealSerializer
 )
 
-# --------------- MENU -------------------------------------------------------------
+# --------------- CLIENT -------------------------------------------------------------
 
 # --------------- Get Establishment Menu ---------------
 @api_view(["POST"])
@@ -114,3 +116,65 @@ def get_meals(request):
             }
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+
+
+# --------------- ESTABLISHMENT -------------------------------------------------------------
+
+# --------------- Get Establishment Categories ---------------
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def add_category(request):
+    if request.method == "POST":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        ser = CreateCategorySerializer(data=request_data)
+        establishment = account.establishment
+
+        if ser.is_valid():
+
+            category = Category()
+            category.name = request_data["name"]
+            category.establishment = establishment
+
+            is_saved = category.save()
+
+            if is_saved == False:
+                data['status'] = 'failed'
+                data['desc'] = 'new category not created'
+
+            data['status'] = 'success'
+            data['desc'] = 'new category created'
+        
+        else:
+            data['status'] = 'failed'
+            data['desc'] = 'request json with error'
+        
+    return Response(data=data, status=status.HTTP_200_OK)
+
+
+# --------------- Get Establishment Categories ---------------
+@api_view(["POST"])
+@permission_classes((IsAuthenticated,))
+def add_new_meal(request):
+    if request.method == "POST":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        meal = Meal()
+        ser = CreateMealSerializer(meal, data=request_data)
+        
+        if ser.is_valid():
+            ser.save()
+
+            data['status'] = 'success'
+            data['desc'] = 'new meal created'
+        
+        else:
+            data['status'] = 'failed'
+            data['desc'] = 'request json with error'
+        
+    return Response(data=data, status=status.HTTP_200_OK)
