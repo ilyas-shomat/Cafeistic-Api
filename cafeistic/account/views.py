@@ -14,7 +14,8 @@ from .serializer import (
     ReadableAccountSerializer,
     ScheduleSerializer,
     WriteableScheduleSerializer,
-    EditableAccountSerializer
+    EditableAccountSerializer,
+    ChangeablePasswordSerializer
 )
 
 from .models import (
@@ -84,11 +85,45 @@ def edit_profile(request):
                 data['desc'] = 'profile not edited'
 
         data['status'] = 'success'
-        data['desc'] = 'profile not edited'
+        data['desc'] = 'profile edited'
 
         return Response(data=data, status=status.HTTP_200_OK)
 
+# --------------- Change Password ---------------
+class ChangePasswordView(UpdateAPIView):
+    serializer_class = ChangeablePasswordSerializer
+    model = Account
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+    
 
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        data = {}
+
+
+        if serializer.is_valid():
+            # Check old password
+            if not self.object.check_password(serializer.data.get("old_password")):
+                data['status'] = 'failed'
+                data['desc'] = 'wrong password'
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+
+            # set_password also hashes the password that the user will get
+            self.object.set_password(serializer.data.get("new_password"))
+            self.object.save()
+
+            data['status'] = 'success'
+            data['desc'] = 'successfully changed password'
+
+            return Response(data=data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # --------------- ESTABLISHMENT -------------------------------------------------------------
 

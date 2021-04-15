@@ -10,6 +10,8 @@ urlpatterns = [
     path('create_user', views.create_new_user, name="create_new_user"),
     path('get_profile', views.get_profile, name="get_profile"),
     path('edit_profile', views.edit_profile, name="edit_profile"),
+    path('change_password', views.ChangePasswordView.as_view(), name="change_password"),
+
 
 
     ############ ESTABLISHMENT #############
