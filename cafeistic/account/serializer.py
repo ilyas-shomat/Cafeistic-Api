@@ -30,9 +30,27 @@ class AccountSerializer(serializers.ModelSerializer):
         return account
 
 
+class ReadableAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Account
+        fields = ('id','username','full_name','email','user_type')
+
+
 # --------------- ESTABLISHMENT -------------------------------------------------------------
 
 class EstablishmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Establishment
         fields = "__all__"
+
+
+class ScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Schedule
+        fields = "__all__"
+
+
+class WriteableScheduleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Schedule
+        fields = ('monday', 'tuesday', 'wednesday','thursday', 'friday', 'saturday', 'sunday')
