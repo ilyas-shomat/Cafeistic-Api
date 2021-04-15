@@ -13,7 +13,8 @@ from .serializer import (
     EstablishmentSerializer,
     ReadableAccountSerializer,
     ScheduleSerializer,
-    WriteableScheduleSerializer
+    WriteableScheduleSerializer,
+    EditableAccountSerializer
 )
 
 from .models import (
@@ -21,7 +22,7 @@ from .models import (
     Schedule
 )
 
-# --------------- USER -------------------------------------------------------------
+# --------------- COMMON -------------------------------------------------------------
 
 # --------------- Registration New User ---------------
 @api_view(["POST"])
@@ -40,6 +41,52 @@ def create_new_user(request):
         else:
             data = ser.errors
         return Response(data)
+
+
+
+# --------------- Get Profile---------------
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_profile(request):
+    if request.method == "GET":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        ser = ReadableAccountSerializer(account)
+
+        data['status'] = 'success'
+        data['desc'] = ''
+        data['data'] = {
+            "account": ser.data
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+
+# --------------- Edit Profile---------------
+@api_view(["PUT"])
+@permission_classes((IsAuthenticated,))
+def edit_profile(request):
+    if request.method == "PUT":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        ser = EditableAccountSerializer(account, data=request_data, partial=True)
+
+        if ser.is_valid():
+            is_save = ser.save()
+
+            if is_save == False:
+                data['status'] = 'failed'
+                data['desc'] = 'profile not edited'
+
+        data['status'] = 'success'
+        data['desc'] = 'profile not edited'
+
+        return Response(data=data, status=status.HTTP_200_OK)
 
 
 
@@ -190,3 +237,5 @@ def create_staff_schedule(request):
             data['desc'] = 'schedule created'
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+
