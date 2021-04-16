@@ -36,6 +36,16 @@ class ReadableAccountSerializer(serializers.ModelSerializer):
         fields = ('id','username','full_name','email','user_type')
 
 
+class EditableAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Account
+        fields = ('username','full_name','email')
+
+
+class ChangeablePasswordSerializer(serializers.Serializer):
+    old_password = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True)
+
 # --------------- ESTABLISHMENT -------------------------------------------------------------
 
 class EstablishmentSerializer(serializers.ModelSerializer):

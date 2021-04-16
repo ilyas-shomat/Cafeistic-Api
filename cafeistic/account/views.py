@@ -13,7 +13,9 @@ from .serializer import (
     EstablishmentSerializer,
     ReadableAccountSerializer,
     ScheduleSerializer,
-    WriteableScheduleSerializer
+    WriteableScheduleSerializer,
+    EditableAccountSerializer,
+    ChangeablePasswordSerializer
 )
 
 from .models import (
@@ -21,7 +23,7 @@ from .models import (
     Schedule
 )
 
-# --------------- USER -------------------------------------------------------------
+# --------------- COMMON -------------------------------------------------------------
 
 # --------------- Registration New User ---------------
 @api_view(["POST"])
@@ -42,6 +44,86 @@ def create_new_user(request):
         return Response(data)
 
 
+
+# --------------- Get Profile---------------
+@api_view(["GET"])
+@permission_classes((IsAuthenticated,))
+def get_profile(request):
+    if request.method == "GET":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        ser = ReadableAccountSerializer(account)
+
+        data['status'] = 'success'
+        data['desc'] = ''
+        data['data'] = {
+            "account": ser.data
+        }
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+
+
+# --------------- Edit Profile---------------
+@api_view(["PUT"])
+@permission_classes((IsAuthenticated,))
+def edit_profile(request):
+    if request.method == "PUT":
+        data = {}
+        account = request.user
+        request_data = request.data
+
+        ser = EditableAccountSerializer(account, data=request_data, partial=True)
+
+        if ser.is_valid():
+            is_save = ser.save()
+
+            if is_save == False:
+                data['status'] = 'failed'
+                data['desc'] = 'profile not edited'
+
+        data['status'] = 'success'
+        data['desc'] = 'profile edited'
+
+        return Response(data=data, status=status.HTTP_200_OK)
+
+# --------------- Change Password ---------------
+class ChangePasswordView(UpdateAPIView):
+    serializer_class = ChangeablePasswordSerializer
+    model = Account
+    permission_classes = (IsAuthenticated,)
+    authentication_classes = (TokenAuthentication,)
+    
+
+    def get_object(self, queryset=None):
+        obj = self.request.user
+        return obj
+
+    def update(self, request, *args, **kwargs):
+        self.object = self.get_object()
+        serializer = self.get_serializer(data=request.data)
+        data = {}
+
+
+        if serializer.is_valid():
+            # Check old password
+            if not self.object.check_password(serializer.data.get("old_password")):
+                data['status'] = 'failed'
+                data['desc'] = 'wrong password'
+                return Response(data=data, status=status.HTTP_400_BAD_REQUEST)
+
+            # set_password also hashes the password that the user will get
+            self.object.set_password(serializer.data.get("new_password"))
+            self.object.save()
+
+            data['status'] = 'success'
+            data['desc'] = 'successfully changed password'
+
+            return Response(data=data, status=status.HTTP_200_OK)
+
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # --------------- ESTABLISHMENT -------------------------------------------------------------
 
@@ -190,3 +272,5 @@ def create_staff_schedule(request):
             data['desc'] = 'schedule created'
 
         return Response(data=data, status=status.HTTP_200_OK)
+
+
