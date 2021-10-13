@@ -1,1 +1,1 @@
-web: gunicorn {{ cafeistic.wsgi }}.wsgi
+web: gunicorn cafeistic.wsgi
